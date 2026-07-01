@@ -1,9 +1,23 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-mpesa-tester-dev-key-change-in-production'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+
+
+def env(name, default=None):
+    return os.environ.get(name, default)
+
+
+def env_bool(name, default=False):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+SECRET_KEY = env("DJANGO_SECRET_KEY", "django-insecure-mpesa-tester-dev-key-change-in-production")
+DEBUG = env_bool("DJANGO_DEBUG", True)
+ALLOWED_HOSTS = [host.strip() for host in env("DJANGO_ALLOWED_HOSTS", "*").split(",") if host.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -48,7 +62,7 @@ WSGI_APPLICATION = 'mpesa_tester.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': env("DJANGO_DB_NAME", str(BASE_DIR / 'db.sqlite3')),
     }
 }
 

@@ -11,6 +11,9 @@ A local developer tool for testing the Vodacom M-Pesa OpenAPI (`openapiportal.m-
 ## Setup
 
 ```bash
+# 0. Create local environment config
+cp .env.example .env
+
 # 1. Install dependencies
 pip install django requests pycryptodome
 
@@ -23,6 +26,19 @@ python manage.py runserver
 # 4. Open browser
 # http://127.0.0.1:8000
 ```
+
+## Environment Variables
+
+The Django project reads its core settings from environment variables. The defaults are safe for local development, but you should override them before deployment.
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `DJANGO_SECRET_KEY` | Django secret key | bundled dev key |
+| `DJANGO_DEBUG` | Turns Django debug mode on or off | `True` |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated allowed hosts | `*` |
+| `DJANGO_DB_NAME` | SQLite database path | `db.sqlite3` |
+
+For a local setup, keep the values in `.env.example` and adjust them as needed.
 
 ## Usage
 

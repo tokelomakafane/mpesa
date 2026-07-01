@@ -25,6 +25,7 @@ media/
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Editor / IDE
 .idea/
