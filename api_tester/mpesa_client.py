@@ -136,7 +136,7 @@ class MpesaClient:
             resp = requests.get(url, headers=self._get_headers(bearer), timeout=30)
             try:
                 data = resp.json()
-            except:
+            except ValueError:
                 data = {"error": "Invalid JSON response from API", "raw": resp.text[:500]}
             return {"status_code": resp.status_code, "data": data, "url": url}
         except Exception as e:
@@ -148,7 +148,7 @@ class MpesaClient:
             resp = requests.post(url, json=payload, headers=self._get_headers(self._session_bearer()), timeout=30)
             try:
                 data = resp.json()
-            except:
+            except ValueError:
                 data = {"error": "Invalid JSON response from API", "raw": resp.text[:500]}
             return {"status_code": resp.status_code, "data": data, "url": url}
         except Exception as e:

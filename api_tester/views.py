@@ -1,5 +1,5 @@
 import json
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -161,7 +161,7 @@ def betting_withdraw(request):
 
     try:
         amt_dec = Decimal(amount)
-    except:
+    except (InvalidOperation, TypeError, ValueError):
         return JsonResponse({"error": "Invalid amount"}, status=400)
 
     acc = UserAccount.objects.filter(msisdn=msisdn).first()
