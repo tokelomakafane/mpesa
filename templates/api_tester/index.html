@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-Pesa Betting App</title>
+{% load static %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0d0f12;
+    --surface: #141619;
+    --surface2: #1c1f23;
+    --border: #252830;
+    --border-bright: #343843;
+    --mpesa-red: #e8002d;
+    --mpesa-red-dim: #a8001f;
+    --mpesa-red-glow: rgba(232,0,45,0.15);
+    --green: #00c97a;
+    --green-dim: rgba(0,201,122,0.12);
+    --yellow: #f5c518;
+    --yellow-dim: rgba(245,197,24,0.12);
+    --red-dim: rgba(232,0,45,0.12);
+    --text: #e8eaed;
+    --text-muted: #8b909a;
+    --text-dim: #5a5f6b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark {
+    width: 28px; height: 28px;
+    background: var(--mpesa-red);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 11px; letter-spacing: 0.5px;
+    color: white;
+  }
+  .brand-name {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+
+  .session-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim);
+  }
+  .dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .badge-text { color: var(--text-muted); }
+  .badge-text.active { color: var(--green); }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 360px;
+    height: calc(100vh - 52px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+  .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+  .sidebar-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 8px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.12s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--mpesa-red-glow); color: var(--text); border: 1px solid var(--mpesa-red-dim); }
+
+  /* MAIN AREA */
+  .main { overflow-y: auto; padding: 24px; }
+  .panel { display: none; }
+  .panel.visible { display: block; }
+  .panel-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-size: 18px; font-weight: 600; }
+
+  /* STAT CARDS */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-family: var(--mono); }
+  .stat-value { font-size: 24px; font-weight: 600; color: var(--green); margin-top: 4px; }
+  .stat-value.red { color: var(--mpesa-red); }
+
+  /* FORMS */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 11px; font-weight: 500; color: var(--text-muted); font-family: var(--mono); }
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 9px 12px;
+    outline: none;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.12s;
+  }
+  .btn-primary { background: var(--mpesa-red); color: white; }
+  .btn-secondary { background: var(--green); color: white; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  th { text-align: left; font-size: 11px; color: var(--text-dim); text-transform: uppercase; padding: 12px; border-bottom: 1px solid var(--border); }
+  td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+  /* LOG PANEL */
+  .log-panel { background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; }
+  .log-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+  .log-entry { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+
+  .loading-spin {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    animation: slideUp 0.3s ease-out;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  #toast.success { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+  #toast.error { border-color: var(--mpesa-red); color: var(--mpesa-red); background: var(--red-dim); }
+
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-mark">BP</div>
+    <span class="brand-name">M-Pesa Betting Hub</span>
+  </div>
+  <div class="session-badge">
+    <div class="dot {% if active_session and active_session.session_id %}active{% endif %}"></div>
+    <span class="badge-text {% if active_session and active_session.session_id %}active{% endif %}" id="session-badge-text">
+      {% if active_session and active_session.session_id %}
+        Session active · {{ active_session.market }}
+      {% else %}
+        No active session
+      {% endif %}
+    </span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT NAV -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Admin</div>
+      <button class="nav-item active" onclick="showPanel('betting', this)">
+        Betting Dashboard
+      </button>
+      <button class="nav-item" onclick="showPanel('session', this)">
+        M-Pesa Setup
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- BETTING DASHBOARD -->
+    <div class="panel visible" id="panel-betting">
+      <div class="panel-header">
+        <div class="panel-title">Business Overview</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total Business Earnings</div>
+          <div class="stat-value" id="biz-earnings">{{ business_made }} LSL</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value">{{ accounts|length }}</div>
+        </div>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title">User Transactions</div>
+      </div>
+
+      <div class="form-grid" style="margin-bottom: 30px; background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border);">
+        <div class="field">
+          <label>Phone Number (MSISDN)</label>
+          <input type="text" id="bet-msisdn" placeholder="266000000001">
+        </div>
+        <div class="field">
+          <label>Amount</label>
+          <input type="number" id="bet-amount" placeholder="10.00">
+        </div>
+        <div class="field" style="grid-column: span 2; display: flex; flex-direction: row; gap: 10px;">
+           <button class="btn btn-secondary" style="flex: 1" onclick="doBetDeposit()">
+              Deposit (C2B)
+           </button>
+           <button class="btn btn-primary" style="flex: 1" onclick="doBetWithdraw()">
+              Withdraw (B2C)
+           </button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>User MSISDN</th>
+            <th>Balance</th>
+            <th>Last Transaction</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          {% for acc in accounts %}
+          <tr>
+            <td style="font-family: var(--mono)">{{ acc.msisdn }}</td>
+            <td style="color: var(--green); font-weight: 600">{{ acc.balance }} LSL</td>
+            <td style="font-size: 11px; color: var(--text-dim)">{{ acc.created_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SESSION SETUP PANEL (Existing) -->
+    <div class="panel" id="panel-session">
+      <div class="panel-header">
+        <div class="panel-title">M-Pesa Gateway Setup</div>
+      </div>
+      <div class="form-grid">
+        <div class="field span2">
+          <label>API Key</label>
+          <input type="password" id="sess-api-key" placeholder="Sandbox Key">
+        </div>
+        <div class="field span2">
+          <label>Public Key</label>
+          <textarea id="sess-pub-key" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label>Market</label>
+          <select id="sess-market">
+            <option value="LSO">Lesotho</option>
+            <option value="GHA">Ghana</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-session" onclick="doGetSession()">Get Session</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LOG PANEL -->
+  <div class="log-panel">
+    <div class="log-header">
+      <span class="log-title">API LOGS</span>
+      <a href="{% url 'clear_logs' %}" style="color: var(--text-dim); font-size: 10px;">Clear</a>
+    </div>
+    <div id="log-entries">
+       {% for log in recent_logs %}
+       <div class="log-entry">
+         <div style="font-size: 11px; color: var(--text-muted)">{{ log.get_tx_type_display }}</div>
+         <div style="font-family: var(--mono); font-size: 10px; color: {% if log.success %}var(--green){% else %}var(--mpesa-red){% endif %}">
+           {{ log.response_code }} · HTTP {{ log.status_code }}
+         </div>
+       </div>
+       {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type;
+  t.style.display = 'flex';
+  setTimeout(() => { t.style.display = 'none'; }, 4000);
+}
+
+function showPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('visible');
+  if (el) el.classList.add('active');
+}
+
+async function post(url, formData) {
+  formData.append('csrfmiddlewaretoken', CSRF);
+  const res = await fetch(url, { method: 'POST', body: formData });
+  return await res.json();
+}
+
+async function doBetDeposit() {
+  const msisdn = document.getElementById('bet-msisdn').value;
+  const amount = document.getElementById('bet-amount').value;
+  if(!msisdn || !amount) return showToast('Please enter MSISDN and Amount', 'error');
+
+  const btn = event.target;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="loading-spin"></span> Processing...';
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('msisdn', msisdn);
+  fd.append('amount', amount);
+
+  try {
+    const res = await post('/bet/deposit/', fd);
+    if(res.success) {
+      showToast('Payment was successful! Balance updated.', 'success');
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showToast('Deposit Failed: ' + (res.response?.output_ResponseDesc || 'Check logs'), 'error');
+    }
+  } catch(e) {
+    showToast('System Error', 'error');
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+}
+
+async function doBetWithdraw() {
+  const msisdn = document.getElementById('bet-msisdn').value;
+  const amount = document.getElementById('bet-amount').value;
+  if(!msisdn || !amount) return showToast('Please enter MSISDN and Amount', 'error');
+
+  const btn = event.target;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="loading-spin"></span> Processing...';
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('msisdn', msisdn);
+  fd.append('amount', amount);
+
+  try {
+    const res = await post('/bet/withdraw/', fd);
+    if(res.success) {
+      showToast('Withdrawal successful! Funds sent to ' + msisdn, 'success');
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showToast('Withdrawal Failed: ' + (res.error?.output_ResponseDesc || res.error || 'Insufficient balance'), 'error');
+    }
+  } catch(e) {
+    showToast('System Error', 'error');
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+}
+
+async function doGetSession() {
+  const fd = new FormData();
+  fd.append('api_key', document.getElementById('sess-api-key').value);
+  fd.append('public_key', document.getElementById('sess-pub-key').value);
+  fd.append('market', document.getElementById('sess-market').value);
+  fd.append('environment', 'sandbox');
+
+  const data = await post('/session/get/', fd);
+  if(data.success) {
+    location.reload();
+  } else {
+    alert('Session Failed');
+  }
+}
+</script>
+
+</body>
+</html>

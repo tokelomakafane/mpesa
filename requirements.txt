@@ -1,0 +1,12 @@
+Django>=4.2,<5.0
+requests>=2.31.0
+pycryptodome>=3.19.0
+
+# NOTE: portalsdk is NOT on PyPI.
+# It is available as a zip download from openapiportal.m-pesa.com
+# under your account > API Downloads > Python SDK.
+# To use it alongside this app:
+#   1. Unzip the downloaded portalsdk package into this project folder
+#   2. pip install ./portalsdk  (or add it to sys.path manually)
+# This app's mpesa_client.py replicates portalsdk behaviour exactly
+# using pycryptodome, so portalsdk is NOT required to run this app.
